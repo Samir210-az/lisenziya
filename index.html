@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Lisenziya Generator — Cbt1</title>
+<title>Lisenziya Generator — AN</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#2b7a4b">
 <link rel="icon" href="icon-192.png">
@@ -33,7 +33,12 @@
 </div>
 
 <div class="box" id="tool">
-  <h1>Cbt1 — Lisenziya Generatoru</h1>
+  <h1>Lisenziya Generatoru</h1>
+  <label>Məhsul</label>
+  <select id="productSelect">
+    <option value="CBT1">Cbt1</option>
+    <option value="AITEST">ai-test</option>
+  </select>
   <label>Lisenziya növü</label>
   <select id="tierSelect">
     <option value="1M">1 aylıq</option>
@@ -51,21 +56,22 @@
 
 <script>
 const ADMIN_PIN = "AL2026EA";
-const SALT = "AN-CBT1-2026";
+const SALTS = { CBT1: "AN-CBT1-2026", AITEST: "AN-AITEST-2026" };
 const DURATIONS = { "1M": 30, "6M": 182, "1Y": 365 };
 const PIN_STORAGE_KEY = "lisenziya_gen_pin_ok";
 
-function computeChecksum(tier, days) {
-  const str = tier + "-" + days + "-" + SALT;
+function computeChecksum(tier, days, salt) {
+  const str = tier + "-" + days + "-" + salt;
   let sum = 0;
   for (let i = 0; i < str.length; i++) sum = (sum * 31 + str.charCodeAt(i)) >>> 0;
   return sum.toString(36).toUpperCase().padStart(4, "0").slice(-4);
 }
 
-function generateCode(tier) {
+function generateCode(product, tier) {
+  const salt = SALTS[product];
   const days = Math.floor(Date.now() / 86400000) + DURATIONS[tier];
   const daysB36 = days.toString(36).toUpperCase();
-  const checksum = computeChecksum(tier, days);
+  const checksum = computeChecksum(tier, days, salt);
   return { code: `LIC-${tier}-${daysB36}-${checksum}`, expiryDate: new Date(days * 86400000) };
 }
 
@@ -85,8 +91,9 @@ document.getElementById("pinBtn").onclick = function() {
 };
 
 document.getElementById("genBtn").onclick = function() {
+  const product = document.getElementById("productSelect").value;
   const tier = document.getElementById("tierSelect").value;
-  const { code, expiryDate } = generateCode(tier);
+  const { code, expiryDate } = generateCode(product, tier);
   document.getElementById("licCode").textContent = code;
   document.getElementById("expiryHint").textContent = "Bitmə tarixi: " + expiryDate.toLocaleDateString("az-AZ");
   document.getElementById("resultBox").style.display = "block";
