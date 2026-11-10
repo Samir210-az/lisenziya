@@ -1,8 +1,8 @@
 {
   "name": "Lisenziya Generator",
   "short_name": "Lisenziya",
-  "start_url": "/lisenziya/",
-  "scope": "/lisenziya/",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#0f1115",
   "theme_color": "#2b7a4b",
