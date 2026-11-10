@@ -26,87 +26,13 @@
 </head>
 <body>
 
-<div class="box" id="gate">
-  <h1>🔒 Giriş</h1>
-  <input type="password" id="pinInput" placeholder="Admin PIN" maxlength="12">
-  <button id="pinBtn">Daxil ol</button>
-  <div class="err" id="pinError">PIN yanlışdır</div>
-</div>
-
-<div class="box" id="tool">
+<div class="box">
   <h1>Lisenziya Generatoru</h1>
-  <label>Məhsul</label>
-  <select id="productSelect">
-    <option value="CBT1">Cbt1</option>
-    <option value="AITEST">ai-test</option>
-  </select>
-  <label>Lisenziya növü</label>
-  <select id="tierSelect">
-    <option value="1M">1 aylıq</option>
-    <option value="6M">6 aylıq</option>
-    <option value="1Y">1 illik</option>
-  </select>
-  <button id="genBtn">Lisenziya yarat</button>
-  <div class="result" id="resultBox">
-    <div style="font-size:0.8rem;color:#9aa0aa;margin-bottom:6px">Lisenziya kodu:</div>
-    <code id="licCode"></code>
-    <div class="hint" id="expiryHint"></div>
-    <button class="copy-btn" id="copyBtn">Kopyala</button>
-  </div>
+  <p class="hint" style="font-size:0.95rem;line-height:1.5;margin:10px 0 16px">Kodlar artıq serverdə yaradılır və yoxlanılır. Hər kod bir telefon nömrəsinə bağlanır. Cbt1 və ai-test üçün kodu admin səhifəsindən yarat.</p>
+  <a href="https://ai-test.aze-ai.az/admin-lisenziya.html" style="display:block;text-align:center;text-decoration:none"><button type="button" style="width:100%">Admin səhifəsinə keç</button></a>
 </div>
 
 <script>
-const ADMIN_PIN = "AL2026EA";
-const SALTS = { CBT1: "AN-CBT1-2026", AITEST: "AN-AITEST-2026" };
-const DURATIONS = { "1M": 30, "6M": 182, "1Y": 365 };
-const PIN_STORAGE_KEY = "lisenziya_gen_pin_ok";
-
-function computeChecksum(tier, days, salt) {
-  const str = tier + "-" + days + "-" + salt;
-  let sum = 0;
-  for (let i = 0; i < str.length; i++) sum = (sum * 31 + str.charCodeAt(i)) >>> 0;
-  return sum.toString(36).toUpperCase().padStart(4, "0").slice(-4);
-}
-
-function generateCode(product, tier) {
-  const salt = SALTS[product];
-  const days = Math.floor(Date.now() / 86400000) + DURATIONS[tier];
-  const daysB36 = days.toString(36).toUpperCase();
-  const checksum = computeChecksum(tier, days, salt);
-  return { code: `LIC-${tier}-${daysB36}-${checksum}`, expiryDate: new Date(days * 86400000) };
-}
-
-if (sessionStorage.getItem(PIN_STORAGE_KEY) === "1") {
-  document.getElementById("gate").style.display = "none";
-  document.getElementById("tool").style.display = "block";
-}
-
-document.getElementById("pinBtn").onclick = function() {
-  if (document.getElementById("pinInput").value.trim().toUpperCase() === ADMIN_PIN) {
-    sessionStorage.setItem(PIN_STORAGE_KEY, "1");
-    document.getElementById("gate").style.display = "none";
-    document.getElementById("tool").style.display = "block";
-  } else {
-    document.getElementById("pinError").style.display = "block";
-  }
-};
-
-document.getElementById("genBtn").onclick = function() {
-  const product = document.getElementById("productSelect").value;
-  const tier = document.getElementById("tierSelect").value;
-  const { code, expiryDate } = generateCode(product, tier);
-  document.getElementById("licCode").textContent = code;
-  document.getElementById("expiryHint").textContent = "Bitmə tarixi: " + expiryDate.toLocaleDateString("az-AZ");
-  document.getElementById("resultBox").style.display = "block";
-};
-
-document.getElementById("copyBtn").onclick = function() {
-  navigator.clipboard.writeText(document.getElementById("licCode").textContent).then(() => {
-    this.textContent = "Kopyalandı ✓";
-    setTimeout(() => (this.textContent = "Kopyala"), 1500);
-  });
-};
-
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("sw.js");
 }
